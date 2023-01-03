@@ -1,11 +1,13 @@
-const userModel = require("../models/User");
+const { userModel } = require("../models/User");
 const reIssueAccessToken = require("../services/Session");
 
 const { verifyJwt } = require("../utils/Jwt");
 
 const deserializeUser = async (req, res, next) => {
   try {
-    const header = req.headers.authentication;
+    const header = req.headers.authorization;
+
+    // console.log(header);
 
     const refreshToken = req.header["x-refresh"];
     if (!header) {
@@ -16,15 +18,18 @@ const deserializeUser = async (req, res, next) => {
 
     const { decoded, expired } = verifyJwt(token);
 
-    const user = userModel.findOne({ _id: decoded });
+    const user = await userModel.findOne({ _id: decoded.userId });
+
+    // console.log(user);
 
     if (!user) {
       res
         .status(500)
         .json({ status: "failure", message: "No user present while checking token" });
     }
+
     if (decoded) {
-      res.local.user = user;
+      req.user = user;
       return next();
     }
 
@@ -35,13 +40,15 @@ const deserializeUser = async (req, res, next) => {
         res.setHeader("x-access-token", accessToken);
       }
 
-      const result = await verifyJwt(accessToken);
-      res.locals.user = result.decoded;
+      const result = verifyJwt(accessToken);
+      res.user = result.decoded;
       next();
     }
 
     next();
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 module.exports = {

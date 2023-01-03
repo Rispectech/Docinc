@@ -1,6 +1,7 @@
 const { userModel } = require("../models/User");
 const { createSession, findSession, updateSession } = require("../services/Session");
 const { validateUserPassword } = require("../services/User");
+const { CreateErrorClass } = require("../utils/error");
 const { signJwt } = require("../utils/Jwt");
 
 const accessTokenCookieOptions = {
@@ -17,15 +18,18 @@ const refreshTokenCookieOptions = {
   maxAge: 3.154e10, // 1 year
 };
 
-const createSessionHandler = async (req, res) => {
+const createSessionHandler = async (req, res, next) => {
   try {
     const userBody = req.body;
-    const user = userModel.find(userBody.email === email);
+    const user = await userModel.findOne({ email: userBody.email });
 
     if (!user) res.status(500).json({ status: "failure", message: "Invalid Email" });
 
-    if (!validateUserPassword())
-      res.status(500).json({ staus: "failure", message: "Invalid Password" });
+    if (!userBody.password) {
+      return next(CreateErrorClass(500, "failure", "Password is required"));
+    }
+    if (!validateUserPassword(userBody.password, user))
+      res.status(500).json({ status: "failure", message: "Invalid Password" });
 
     const session = createSession(user._id, req.get("user-agent") || "");
 
@@ -62,8 +66,9 @@ const createSessionHandler = async (req, res) => {
 
 const getSessionHandler = async (req, res) => {
   try {
-    const userId = req.locals.user._id;
-    const sessions = findSession({ userId: userId, valid: true });
+    const userId = req.user._id;
+    // console.log("controller", userId);
+    const sessions = await findSession({ user: userId, valid: true });
     return res.status(200).json({ status: "success", data: sessions });
   } catch (error) {
     console.log(error);
@@ -73,7 +78,7 @@ const getSessionHandler = async (req, res) => {
 
 const deleteSessionHandler = async (req, res) => {
   try {
-    const sessionId = req.local.user.session;
+    const sessionId = req.user.session;
     await updateSession({ _id: sessionId, valid: false });
     return res.status(200).json({
       status: "success",

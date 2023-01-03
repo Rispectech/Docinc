@@ -2,7 +2,7 @@ const { sessionModel } = require("../models/Session");
 const { verifyJwt } = require("../utils/Jwt");
 
 const createSession = async (userId, userAgent) => {
-  const session = await sessionModel.create({ userId, userAgent });
+  const session = await sessionModel.create({ user: userId, userAgent });
   return session.toJSON();
 };
 
