@@ -1,10 +1,31 @@
 const bcrypt = require("bcrypt");
 const { userModel } = require("../models/User");
 
-const { OtpVerificationModel } = require("../models/VerifiedOtp");
+const { otpVerificationModel } = require("../models/VerifiedOtp");
 const { sendOtpVerificationEmail } = require("../services/Mail");
-const { createUser, findUser } = require("../services/User");
+const { createSession } = require("../services/Session");
+const {
+  createUser,
+  findUser,
+  sendResetEmail,
+  validateUserPassword,
+} = require("../services/User");
 const { CreateErrorClass } = require("../utils/error");
+const { signJwt } = require("../utils/Jwt");
+
+const accessTokenCookieOptions = {
+  maxAge: 900000, // 15 mins
+  httpOnly: true,
+  domain: "localhost",
+  path: "/",
+  sameSite: "lax",
+  secure: false,
+};
+
+const refreshTokenCookieOptions = {
+  ...accessTokenCookieOptions,
+  maxAge: 3.154e10, // 1 year
+};
 
 const userSignupHandler = async (req, res, next) => {
   try {
@@ -86,7 +107,7 @@ const verifyOtpHandler = async (req, res) => {
       });
     }
 
-    const userOtpRecords = await OtpVerificationModel.find({ entityId: _id });
+    const userOtpRecords = await otpVerificationModel.find({ entityId: userId });
     if (userOtpRecords.length < 0) {
       res.status(500).json({
         status: "failure",
@@ -94,28 +115,34 @@ const verifyOtpHandler = async (req, res) => {
       });
     }
 
+    console.log(userOtpRecords);
+
     const { expiresAt, otp } = userOtpRecords[0];
 
-    if (expiresAt < Date.now()) {
-      await userOtpRecords.deleteMany({ entityId: userId });
-      res.status(500).json({
-        status: "failure",
-        message: "Code has expired . Please request again",
-      });
-    }
+    // if (expiresAt < Date.now()) {
+    //   await otpVerificationModel.deleteMany({ entityId: userId });
+    //   return res.status(500).json({
+    //     status: "failure",
+    //     message: "Code has expired . Please request again",
+    //   });
+    // }
+
+    console.log(body_otp, otp);
 
     const validOtp = await bcrypt.compare(body_otp, otp);
 
+    console.log(validOtp);
+
     if (!validOtp) {
-      res.status(500).json({
+      return res.status(500).json({
         status: "failure",
         message: "Invalid OTP",
       });
     }
 
     await userModel.updateOne({ _id: userId }, { verified: true });
-    await userOtpRecords.deleteMany({ _id: userId });
-    res.status(200).json({
+    await otpVerificationModel.deleteMany({ _id: userId });
+    return res.status(200).json({
       status: "success",
       message: "User is verified",
     });
@@ -128,8 +155,8 @@ const resendOtpHandler = async (req, res) => {
   try {
     const { _id, email } = req.user;
 
-    await OtpVerificationModel.deleteMany({ entityId: _id });
-    const data = await sendOtpVerificationEmail();
+    await otpVerificationModel.deleteMany({ entityId: _id });
+    const data = await sendOtpVerificationEmail(email, _id);
     res.status(200).json({
       status: "success",
       data,
@@ -147,7 +174,11 @@ const resetUserPasswordHandler = async (req, res) => {
       res.status(500).json({ status: "failure", message: "User not verified" });
     }
 
-    sendResetEmail(user, redirectUrl);
+    const newPasswordReturn = await sendResetEmail(user, redirectUrl);
+    res.status(200).json({
+      status: "Pending",
+      message: "Resend Link sent",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failure", message: "couldnt reset password" });

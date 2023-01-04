@@ -1,6 +1,14 @@
 const nodeMailer = require("nodemailer");
 const bcrypt = require("bcrypt");
-const { OtpVerificationModel } = require("../models/VerifiedOtp");
+const { otpVerificationModel } = require("../models/VerifiedOtp");
+
+const getHrTime = () => {
+  var datetime = new Date(Date.now());
+  console.log("Before: ", datetime);
+  datetime.setHours(datetime.getHours() + 1);
+  console.log("After: ", datetime);
+  return datetime;
+};
 
 const sendEmail = async (email, subject, html) => {
   const transporter = nodeMailer.createTransport({
@@ -46,11 +54,11 @@ const sendOtpVerificationEmail = async (email, _id) => {
     const saltRounds = 10;
     const hashedOtp = await bcrypt.hash(otp, saltRounds);
 
-    const newOtp = await OtpVerificationModel.create({
-      entity_id: _id,
+    const newOtp = await otpVerificationModel.create({
+      entityId: _id,
       otp: hashedOtp,
       createdAt: Date.now(),
-      expiresAt: Date.now(Date.now() * 3600000),
+      expiresAt: getHrTime(),
     });
 
     await transporter.sendMail(mailOptions);

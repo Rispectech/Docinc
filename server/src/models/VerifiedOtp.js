@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const OtpVerificationSchema = new mongoose.Schema({
+const otpVerificationSchema = new mongoose.Schema({
   entityId: {
     type: String,
     required: ["true", "ID is required"],
@@ -16,8 +16,8 @@ const OtpVerificationSchema = new mongoose.Schema({
   expiresAt: Date,
 });
 
-const OtpVerificationModel = mongoose.model("OtpVerification", OtpVerificationSchema);
+const otpVerificationModel = mongoose.model("OtpVerification", otpVerificationSchema);
 
 module.exports = {
-  OtpVerificationModel,
+  otpVerificationModel,
 };

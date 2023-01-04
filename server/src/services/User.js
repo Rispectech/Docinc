@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
-const uuidv4 = require("uuidv4");
+const { v4 } = require("uuid");
+
+const { resetPasswordModel } = require("../models/ResetPassword");
 const { userModel } = require("../models/User");
 const { CreateErrorClass } = require("../utils/error");
 const { sendEmail } = require("./Mail");
@@ -23,18 +25,29 @@ const upsertGoogleUser = async (query, body, options) => {
   return await userModel.findByIdAndUpdate(query, body, options);
 };
 
-const sendResetEmail = (user, redirectUrl) => {
-  const redirectSequence = uuidv4();
+const sendResetEmail = async (user, redirectUrl) => {
+  const redirectSequence = v4();
   try {
-    sendEmail(
+    const saltRounds = 10;
+    const hash = await bcrypt.hash(redirectSequence, saltRounds);
+    const newPasswordReset = await resetPasswordModel.create({
+      entityId: user._id,
+      resetString: hash,
+      createdAt: Date.now(),
+      expiredAt: Date.now(Date.now() + 3600000),
+    });
+
+    await sendEmail(
       user.email,
       "Password Reset",
       `<p>We heard that you lost your password</p> 
       <p> Dont worry , use the link below to reset it </p>
-      <p> <a href = ${redirectUrl + "/" + _id + "/" + redirectSequence}</p>
+      <p> <a href = ${redirectUrl + "/" + user._id + "/" + redirectSequence}</p>
       <p>This otp will expire after an hour</p>
       `
     );
+
+    return newPasswordReset;
   } catch (error) {
     console.log(error);
   }
@@ -45,4 +58,5 @@ module.exports = {
   createUser,
   validateUserPassword,
   findUser,
+  sendResetEmail,
 };

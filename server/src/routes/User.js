@@ -16,7 +16,7 @@ userRouter.route("/api/user/login").post(userLoginHandler);
 userRouter.route("/api/sessions").get(deserializeUser, getSessionHandler);
 userRouter.route("/api/user/logout").delete(deserializeUser, deleteSessionHandler);
 userRouter.route("/api/user/verifyOtp").post(deserializeUser, verifyOtpHandler);
-userRouter.route("/api/user/resendOtp").post(deserializeUser, resendOtpHandler);
+userRouter.route("/api/user/resendOtp").get(deserializeUser, resendOtpHandler);
 userRouter.route("/api/user/resetPassword").post(deserializeUser, resetUserPasswordHandler);
 
 module.exports = {
