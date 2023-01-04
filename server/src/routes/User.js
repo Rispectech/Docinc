@@ -1,19 +1,23 @@
 const express = require("express");
-const { googleOauthHandler } = require("../controllers/oAuth");
+const { getSessionHandler, deleteSessionHandler } = require("../controllers/Session");
 const {
-  getSessionHandler,
-  createSessionHandler,
-  deleteSessionHandler,
-} = require("../controllers/Session");
-const { createUserHandler } = require("../controllers/User");
+  verifyOtpHandler,
+  resendOtpHandler,
+  userSignupHandler,
+  userLoginHandler,
+  resetUserPasswordHandler,
+} = require("../controllers/User");
 const { deserializeUser } = require("../middleware/Auth");
 const { checkSignup } = require("../middleware/Signup");
 const userRouter = express.Router();
 
-userRouter.route("/api/users").post(checkSignup, createUserHandler);
-userRouter.route("/api/sessions").post(createSessionHandler);
+userRouter.route("/api/user/register").post(checkSignup, userSignupHandler);
+userRouter.route("/api/user/login").post(userLoginHandler);
 userRouter.route("/api/sessions").get(deserializeUser, getSessionHandler);
-userRouter.route("/api/sessions").delete(deserializeUser, deleteSessionHandler);
+userRouter.route("/api/user/logout").delete(deserializeUser, deleteSessionHandler);
+userRouter.route("/api/user/verifyOtp").post(deserializeUser, verifyOtpHandler);
+userRouter.route("/api/user/resendOtp").post(deserializeUser, resendOtpHandler);
+userRouter.route("/api/user/resetPassword").post(deserializeUser, resetUserPasswordHandler);
 
 module.exports = {
   userRouter,

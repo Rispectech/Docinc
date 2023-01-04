@@ -27,13 +27,13 @@ app.use(ErrorHandler);
 const start = async () => {
   try {
     await connectDb();
-    // app.listen(port, () => console.log(`Server is listening at port ${port}`));
-    https
-      .createServer(options, function (req, res) {
-        res.writeHead(200);
-        res.end("hello world\n");
-      })
-      .listen(port, () => console.log(`Server is listening at port ${port}`));
+    app.listen(port, () => console.log(`Server is listening at port ${port}`));
+    // https
+    //   .createServer(options, function (req, res) {
+    //     res.writeHead(200);
+    //     res.end("hello world\n");
+    //   })
+    //   .listen(port, () => console.log(`Server is listening at port ${port}`));
   } catch (error) {
     console.log(error);
   }
