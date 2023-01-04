@@ -2,16 +2,19 @@ const bcrypt = require("bcrypt");
 const { userModel } = require("../models/User");
 
 const { otpVerificationModel } = require("../models/VerifiedOtp");
-const { sendOtpVerificationEmail } = require("../services/Mail");
+const { sendOtpVerificationEmail } = require("../utils/Mail");
 const { createSession } = require("../services/Session");
 const {
   createUser,
   findUser,
   sendResetEmail,
   validateUserPassword,
+  upsertUser,
 } = require("../services/User");
 const { CreateErrorClass } = require("../utils/error");
 const { signJwt } = require("../utils/Jwt");
+const { resetPasswordModel } = require("../models/ResetPassword");
+const { compareHash, generateHash } = require("../utils/bycrpt");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -54,13 +57,13 @@ const userLoginHandler = async (req, res, next) => {
     const userBody = req.body;
     const user = await userModel.findOne({ email: userBody.email });
 
-    if (!user) res.status(500).json({ status: "failure", message: "Invalid Email" });
+    if (!user) return res.status(500).json({ status: "failure", message: "Invalid Email" });
 
     if (!userBody.password) {
       return next(CreateErrorClass(500, "failure", "Password is required"));
     }
     if (!validateUserPassword(userBody.password, user))
-      res.status(500).json({ status: "failure", message: "Invalid Password" });
+      return res.status(500).json({ status: "failure", message: "Invalid Password" });
 
     const session = createSession(user._id, req.get("user-agent") || "");
 
@@ -164,7 +167,7 @@ const resendOtpHandler = async (req, res) => {
   } catch (error) {}
 };
 
-const resetUserPasswordHandler = async (req, res) => {
+const sendResetUserPasswordEmailHandler = async (req, res) => {
   try {
     const user = req.user;
     const redirectUrl = req.body.redirectUrl;
@@ -184,10 +187,59 @@ const resetUserPasswordHandler = async (req, res) => {
     res.status(500).json({ status: "failure", message: "couldnt reset password" });
   }
 };
+
+const resetUserPasswordHandler = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { resetSequence, newPassword } = req.body;
+
+    const resetPasswordObject = await resetPasswordModel.find({ entityId: userId });
+
+    if (!resetPasswordObject.length > 0) {
+      return res
+        .status(500)
+        .json({ status: "failure", message: "Password Request not found" });
+    }
+
+    if (resetPasswordObject[0].expiresAt < Date.now()) {
+      resetPasswordModel.deleteOne({ entityId: userId });
+      return res.status(500).json({ status: "failure", message: "Password Request expired" });
+    }
+
+    const hashedResetSequence = resetPasswordObject[0].resetString;
+    const token = await compareHash(resetSequence, hashedResetSequence);
+    console.log(token);
+
+    if (!token) {
+      return res.status(500).json({ status: "failure", message: "Invalid Token" });
+    }
+
+    const hashedNewPassword = await generateHash(newPassword);
+    const updatedUser = await upsertUser(
+      { _id: userId },
+      { password: hashedNewPassword },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.status(500).json({ status: "failure", message: "Password couldnt be changes" });
+    }
+
+    await resetPasswordModel.deleteOne({ entityId: userId });
+    res.status(200).json({ status: "success", message: "Password was changed" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: "failure", message: "Problem in reseting password" });
+  }
+};
+
 module.exports = {
   userSignupHandler,
   userLoginHandler,
   verifyOtpHandler,
   resendOtpHandler,
+  sendResetUserPasswordEmailHandler,
   resetUserPasswordHandler,
 };

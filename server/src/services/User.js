@@ -4,7 +4,7 @@ const { v4 } = require("uuid");
 const { resetPasswordModel } = require("../models/ResetPassword");
 const { userModel } = require("../models/User");
 const { CreateErrorClass } = require("../utils/error");
-const { sendEmail } = require("./Mail");
+const { sendEmail, getHrTime } = require("../utils/Mail");
 
 const findUser = async (query) => {
   return await userModel.findOne(query);
@@ -21,7 +21,7 @@ const validateUserPassword = (password, user) => {
   return checkPassword;
 };
 
-const upsertGoogleUser = async (query, body, options) => {
+const upsertUser = async (query, body, options) => {
   return await userModel.findByIdAndUpdate(query, body, options);
 };
 
@@ -34,7 +34,7 @@ const sendResetEmail = async (user, redirectUrl) => {
       entityId: user._id,
       resetString: hash,
       createdAt: Date.now(),
-      expiredAt: Date.now(Date.now() + 3600000),
+      expiresAt: getHrTime(),
     });
 
     await sendEmail(
@@ -42,7 +42,9 @@ const sendResetEmail = async (user, redirectUrl) => {
       "Password Reset",
       `<p>We heard that you lost your password</p> 
       <p> Dont worry , use the link below to reset it </p>
-      <p> <a href = ${redirectUrl + "/" + user._id + "/" + redirectSequence}</p>
+      <p>  Press <a href = ${
+        redirectUrl + "/" + user._id + "/" + redirectSequence
+      }> here</a> to proceed</p>
       <p>This otp will expire after an hour</p>
       `
     );
@@ -54,7 +56,7 @@ const sendResetEmail = async (user, redirectUrl) => {
 };
 
 module.exports = {
-  upsertGoogleUser,
+  upsertUser,
   createUser,
   validateUserPassword,
   findUser,

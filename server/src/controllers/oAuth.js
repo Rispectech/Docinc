@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const { getGoogleOauthToken, getGoogleUser } = require("../services/oAuth");
-const { upsertGoogleUser } = require("../services/User");
+const { upsertUser } = require("../services/User");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -30,7 +30,7 @@ const googleOauthHandler = async (req, res) => {
     }
     console.log(googleUser);
 
-    const user = upsertGoogleUser(
+    const user = upsertUser(
       { email: googleUser.email },
       {
         email: googleUser.email,

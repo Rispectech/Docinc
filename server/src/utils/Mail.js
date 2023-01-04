@@ -79,4 +79,5 @@ const sendOtpVerificationEmail = async (email, _id) => {
 module.exports = {
   sendOtpVerificationEmail,
   sendEmail,
+  getHrTime,
 };
