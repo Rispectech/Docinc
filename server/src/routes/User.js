@@ -1,5 +1,5 @@
 const express = require("express");
-const { googleOauthHandler } = require("../controllers/auth");
+const { googleOauthHandler } = require("../controllers/oAuth");
 const {
   getSessionHandler,
   createSessionHandler,

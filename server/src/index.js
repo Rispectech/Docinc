@@ -1,4 +1,7 @@
 const express = require("express");
+const https = require("https");
+const fs = require("fs");
+
 const { authRouter } = require("./routes/auth");
 const { userRouter } = require("./routes/User");
 const { connectDb } = require("./utils/Connect");
@@ -7,6 +10,13 @@ require("dotenv").config();
 
 const port = process.env.PORT || 8000;
 const app = express();
+
+console.log("Current directory:", __dirname);
+
+const options = {
+  key: fs.readFileSync("../key.pem"),
+  cert: fs.readFileSync("../cert.pem"),
+};
 
 app.use(express.json());
 
@@ -17,7 +27,13 @@ app.use(ErrorHandler);
 const start = async () => {
   try {
     await connectDb();
-    app.listen(port, () => console.log(`Server is listening at port ${port}`));
+    // app.listen(port, () => console.log(`Server is listening at port ${port}`));
+    https
+      .createServer(options, function (req, res) {
+        res.writeHead(200);
+        res.end("hello world\n");
+      })
+      .listen(port, () => console.log(`Server is listening at port ${port}`));
   } catch (error) {
     console.log(error);
   }
