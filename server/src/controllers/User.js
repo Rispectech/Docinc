@@ -235,6 +235,9 @@ const resetUserPasswordHandler = async (req, res) => {
   }
 };
 
+// testing controller
+
+const resetUserVerification = async (req, res) => {};
 module.exports = {
   userSignupHandler,
   userLoginHandler,
