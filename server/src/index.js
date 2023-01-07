@@ -1,6 +1,7 @@
 const express = require("express");
 const https = require("https");
 const fs = require("fs");
+const cors = require("cors");
 
 const { authRouter } = require("./routes/auth");
 const { userRouter } = require("./routes/User");
@@ -11,13 +12,14 @@ require("dotenv").config();
 const port = process.env.PORT || 8000;
 const app = express();
 
-console.log("Current directory:", __dirname);
+// console.log("Current directory:", __dirname);
 
 const options = {
   key: fs.readFileSync("../key.pem"),
   cert: fs.readFileSync("../cert.pem"),
 };
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/", authRouter);
