@@ -7,23 +7,42 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import ParticleComponent from "../../components/global/particles";
 import { SignInForm } from "../../components/global/SigninForm";
 import { SignUpForm } from "../../components/global/SignUpForm";
+import VerificationDialog from "../../components/global/VerificationDialog";
 const theme = createTheme();
 
 const UserAuth = () => {
   const [haveAccount, setHaveAccount] = React.useState(true);
+  const [isVerifModalOpen, setIsVerifModalOpen] = React.useState(false);
 
   const FormProps = {
     entity: "Client",
     setHaveAccount,
   };
 
+  const handleClose = () => {
+    setIsVerifModalOpen(false);
+  };
+
+  const handleVerification = async (otp: string) => {
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/register`,
+      {
+        otp,
+      }
+    );
+  };
+
   const registerUser = async (body: formikSignUpInitialValues) => {
     try {
-      const res = axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/register`,
+      console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/register`,
         body
       );
       console.log(res);
+      if (res.status === 200) {
+        setIsVerifModalOpen(true);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -41,6 +60,7 @@ const UserAuth = () => {
           ) : (
             <SignUpForm {...FormProps} registerUser={registerUser} />
           )}
+          <VerificationDialog handleClose={handleClose} isVerifModalOpen={isVerifModalOpen} />
         </Grid>
       </Grid>
     </ThemeProvider>

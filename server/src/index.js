@@ -7,6 +7,7 @@ const { authRouter } = require("./routes/auth");
 const { userRouter } = require("./routes/User");
 const { connectDb } = require("./utils/Connect");
 const { ErrorHandler } = require("./utils/error");
+const { clientRouter } = require("./routes/Client");
 require("dotenv").config();
 
 const port = process.env.PORT || 8000;
@@ -24,6 +25,7 @@ app.use(express.json());
 
 app.use("/", authRouter);
 app.use("/", userRouter);
+app.use("/", clientRouter);
 app.use(ErrorHandler);
 
 const start = async () => {

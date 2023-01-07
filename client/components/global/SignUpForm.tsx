@@ -26,6 +26,8 @@ const SignUpForm: React.FC<SignUpComponentProps> = ({
     },
     onSubmit: (): void => {
       console.log("submitting", formik.values);
+      console.log(formik.errors);
+      registerUser(formik.values);
     },
     validationSchema: Yup.object().shape({
       email: Yup.string().email("Invalid email address").required("Required"),
@@ -73,6 +75,7 @@ const SignUpForm: React.FC<SignUpComponentProps> = ({
           value={formik.values.email}
           onChange={formik.handleChange}
           error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && String(formik.errors.email)}
         />
         <TextField
           margin="normal"
@@ -86,6 +89,7 @@ const SignUpForm: React.FC<SignUpComponentProps> = ({
           value={formik.values.name}
           onChange={formik.handleChange}
           error={formik.touched.name && Boolean(formik.errors.name)}
+          helperText={formik.touched.name && formik.errors.name && String(formik.errors.name)}
         />
 
         <TextField
@@ -100,6 +104,7 @@ const SignUpForm: React.FC<SignUpComponentProps> = ({
           value={formik.values.password}
           onChange={formik.handleChange}
           error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && String(formik.errors.password)}
         />
 
         <TextField
@@ -114,6 +119,7 @@ const SignUpForm: React.FC<SignUpComponentProps> = ({
           value={formik.values.confirmPassword}
           onChange={formik.handleChange}
           error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+          helperText={formik.touched.confirmPassword && String(formik.errors.confirmPassword)}
         />
 
         <FormControlLabel

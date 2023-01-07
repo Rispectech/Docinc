@@ -16,3 +16,8 @@ interface formPropsType {
 interface SignUpComponentProps extends formPropsType {
   registerUser: (body: formikSignUpInitialValues) => Promise<void>;
 }
+
+interface verificationDialogProps {
+  isVerifModalOpen: boolean;
+  handleClose: () => void;
+}

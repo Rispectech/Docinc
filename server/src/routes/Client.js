@@ -7,7 +7,7 @@ const {
   clientLoginHandler,
   sendResetClientPasswordEmailHandler,
   resetClientPasswordHandler,
-} = require("../controllers/client");
+} = require("../controllers/Client");
 const { deserializeClient } = require("../middleware/Auth");
 const { checkSignup } = require("../middleware/Signup");
 const clientRouter = express.Router();
@@ -20,11 +20,11 @@ clientRouter.route("/api/client/verifyOtp").post(deserializeClient, verifyOtpHan
 clientRouter.route("/api/client/resendOtp").get(deserializeClient, resendOtpHandler);
 clientRouter
   .route("/api/client/requestPasswordReset")
-  .post(deserializeclient, sendResetclientPasswordEmailHandler);
+  .post(deserializeClient, sendResetClientPasswordEmailHandler);
 
 clientRouter
   .route("/api/client/resetPassword")
-  .post(deserializeclient, resetclientPasswordHandler);
+  .post(deserializeClient, resetClientPasswordHandler);
 
 module.exports = {
   clientRouter,

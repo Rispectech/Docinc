@@ -1,16 +1,16 @@
 const bcrypt = require("bcrypt");
-const { userModel } = require("../models/User");
+const { clientModel } = require("../models/Client");
 
 const { otpVerificationModel } = require("../models/VerifiedOtp");
 const { sendOtpVerificationEmail } = require("../utils/Mail");
 const { createSession } = require("../services/Session");
 const {
-  createUser,
-  findUser,
+  createClient,
+  findClient,
   sendResetEmail,
-  validateUserPassword,
-  upsertUser,
-} = require("../services/User");
+  validateClientPassword,
+  upsertClient,
+} = require("../services/Client");
 const { CreateErrorClass } = require("../utils/error");
 const { signJwt } = require("../utils/Jwt");
 const { resetPasswordModel } = require("../models/ResetPassword");
@@ -30,46 +30,46 @@ const refreshTokenCookieOptions = {
   maxAge: 3.154e10, // 1 year
 };
 
-const userSignupHandler = async (req, res, next) => {
+const clientSignupHandler = async (req, res, next) => {
   try {
     const body = req.body;
-    const db_user = await findUser({ email: body.email });
+    const db_Client = await findClient({ email: body.email });
 
-    if (db_user) {
-      next(CreateErrorClass(500, "failure", "User already Present"));
+    if (db_Client) {
+      next(CreateErrorClass(500, "failure", "Client already Present"));
     }
-    const user = await createUser(body);
+    const Client = await createClient(body);
 
-    const verifiedOtp = await sendOtpVerificationEmail(user.email, user._id);
+    const verifiedOtp = await sendOtpVerificationEmail(Client.email, Client._id);
 
     console.log(verifiedOtp);
-    const user_obj = user.toObject();
-    delete user_obj.password;
-    // console.log(user_obj);
-    res.status(200).json({ status: "success", data: user_obj });
+    const Client_obj = Client.toObject();
+    delete Client_obj.password;
+    // console.log(Client_obj);
+    res.status(200).json({ status: "success", data: Client_obj });
   } catch (error) {
     console.log(error);
   }
 };
 
-const userLoginHandler = async (req, res, next) => {
+const clientLoginHandler = async (req, res, next) => {
   try {
-    const userBody = req.body;
-    const user = await userModel.findOne({ email: userBody.email });
+    const ClientBody = req.body;
+    const Client = await clientModel.findOne({ email: ClientBody.email });
 
-    if (!user) return res.status(500).json({ status: "failure", message: "Invalid Email" });
+    if (!Client) return res.status(500).json({ status: "failure", message: "Invalid Email" });
 
-    if (!userBody.password) {
+    if (!ClientBody.password) {
       return next(CreateErrorClass(500, "failure", "Password is required"));
     }
-    if (!validateUserPassword(userBody.password, user))
+    if (!validateClientPassword(ClientBody.password, Client))
       return res.status(500).json({ status: "failure", message: "Invalid Password" });
 
-    const session = createSession(user._id, req.get("user-agent") || "");
+    const session = createSession(Client._id, req.get("Client-agent") || "");
 
     const accessToken = signJwt(
       {
-        userId: user._id,
+        ClientId: Client._id,
         session: session._id,
       },
       {
@@ -79,7 +79,7 @@ const userLoginHandler = async (req, res, next) => {
 
     const refreshToken = signJwt(
       {
-        userId: user._id,
+        ClientId: Client._id,
         session: session._id,
       },
       {
@@ -100,30 +100,30 @@ const userLoginHandler = async (req, res, next) => {
 
 const verifyOtpHandler = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const ClientId = req.Client._id;
     const body_otp = req.body.otp;
 
-    if (!userId && !body_otp) {
+    if (!ClientId && !body_otp) {
       return res.status(500).json({
         status: "failure",
         message: "Empty otp is not allowed",
       });
     }
 
-    const userOtpRecords = await otpVerificationModel.find({ entityId: userId });
-    if (userOtpRecords.length < 0) {
+    const ClientOtpRecords = await otpVerificationModel.find({ entityId: ClientId });
+    if (ClientOtpRecords.length < 0) {
       res.status(500).json({
         status: "failure",
         message: "Account Record doesnt exist . Please login or signin",
       });
     }
 
-    console.log(userOtpRecords);
+    console.log(ClientOtpRecords);
 
-    const { expiresAt, otp } = userOtpRecords[0];
+    const { expiresAt, otp } = ClientOtpRecords[0];
 
     // if (expiresAt < Date.now()) {
-    //   await otpVerificationModel.deleteMany({ entityId: userId });
+    //   await otpVerificationModel.deleteMany({ entityId: ClientId });
     //   return res.status(500).json({
     //     status: "failure",
     //     message: "Code has expired . Please request again",
@@ -143,11 +143,11 @@ const verifyOtpHandler = async (req, res) => {
       });
     }
 
-    await userModel.updateOne({ _id: userId }, { verified: true });
-    await otpVerificationModel.deleteMany({ _id: userId });
+    await clientModel.updateOne({ _id: ClientId }, { verified: true });
+    await otpVerificationModel.deleteMany({ _id: ClientId });
     return res.status(200).json({
       status: "success",
-      message: "User is verified",
+      message: "Client is verified",
     });
   } catch (error) {
     console.log(error);
@@ -156,7 +156,7 @@ const verifyOtpHandler = async (req, res) => {
 
 const resendOtpHandler = async (req, res) => {
   try {
-    const { _id, email } = req.user;
+    const { _id, email } = req.Client;
 
     await otpVerificationModel.deleteMany({ entityId: _id });
     const data = await sendOtpVerificationEmail(email, _id);
@@ -167,17 +167,17 @@ const resendOtpHandler = async (req, res) => {
   } catch (error) {}
 };
 
-const sendResetUserPasswordEmailHandler = async (req, res) => {
+const sendResetClientPasswordEmailHandler = async (req, res) => {
   try {
-    const user = req.user;
+    const Client = req.Client;
     const redirectUrl = req.body.redirectUrl;
 
-    if (!user.verified) {
+    if (!Client.verified) {
       console.log(error);
-      res.status(500).json({ status: "failure", message: "User not verified" });
+      res.status(500).json({ status: "failure", message: "Client not verified" });
     }
 
-    const newPasswordReturn = await sendResetEmail(user, redirectUrl);
+    const newPasswordReturn = await sendResetEmail(Client, redirectUrl);
     res.status(200).json({
       status: "Pending",
       message: "Resend Link sent",
@@ -188,12 +188,12 @@ const sendResetUserPasswordEmailHandler = async (req, res) => {
   }
 };
 
-const resetUserPasswordHandler = async (req, res) => {
+const resetClientPasswordHandler = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const ClientId = req.Client._id;
     const { resetSequence, newPassword } = req.body;
 
-    const resetPasswordObject = await resetPasswordModel.find({ entityId: userId });
+    const resetPasswordObject = await resetPasswordModel.find({ entityId: ClientId });
 
     if (!resetPasswordObject.length > 0) {
       return res
@@ -202,7 +202,7 @@ const resetUserPasswordHandler = async (req, res) => {
     }
 
     if (resetPasswordObject[0].expiresAt < Date.now()) {
-      resetPasswordModel.deleteOne({ entityId: userId });
+      resetPasswordModel.deleteOne({ entityId: ClientId });
       return res.status(500).json({ status: "failure", message: "Password Request expired" });
     }
 
@@ -215,17 +215,17 @@ const resetUserPasswordHandler = async (req, res) => {
     }
 
     const hashedNewPassword = await generateHash(newPassword);
-    const updatedUser = await upsertUser(
-      { _id: userId },
+    const updatedClient = await upsertClient(
+      { _id: ClientId },
       { password: hashedNewPassword },
       { new: true }
     );
 
-    if (!updatedUser) {
+    if (!updatedClient) {
       res.status(500).json({ status: "failure", message: "Password couldnt be changes" });
     }
 
-    await resetPasswordModel.deleteOne({ entityId: userId });
+    await resetPasswordModel.deleteOne({ entityId: ClientId });
     res.status(200).json({ status: "success", message: "Password was changed" });
   } catch (error) {
     console.log(error);
@@ -237,12 +237,12 @@ const resetUserPasswordHandler = async (req, res) => {
 
 // testing controller
 
-const resetUserVerification = async (req, res) => {};
+const resetClientVerification = async (req, res) => {};
 module.exports = {
-  userSignupHandler,
-  userLoginHandler,
+  clientSignupHandler,
+  clientLoginHandler,
   verifyOtpHandler,
   resendOtpHandler,
-  sendResetUserPasswordEmailHandler,
-  resetUserPasswordHandler,
+  sendResetClientPasswordEmailHandler,
+  resetClientPasswordHandler,
 };

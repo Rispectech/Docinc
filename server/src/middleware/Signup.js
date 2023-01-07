@@ -30,12 +30,13 @@ const checkSignup = async (req, res, next) => {
   try {
     // console.log(req.body);
     const body = req.body;
+    console.log(body);
     if (!isEmailValid(body.email)) {
       //   res.status(500).json({ status: "failure", message: "Email not valid" });
       return next(CreateErrorClass(500, "failure", "Email not valid"));
     }
 
-    if (body.password !== body.passwordConfirmation) {
+    if (body.password !== body.confirmPassword) {
       //   res.status(500).json({ status: "failure", message: "" });
       return next(CreateErrorClass(500, "failure", "Password dont match"));
     }
