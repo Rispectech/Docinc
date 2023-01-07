@@ -12,14 +12,15 @@ import Typography from "@mui/material/Typography";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-const SignInForm = ({ entity, setHaveAccount }: formPropsType) => {
+const SignInForm: React.FC<SignInComponentProps> = ({ entity, setHaveAccount, loginUser }) => {
   const formik = useFormik<formikSignInInitialValues>({
     initialValues: {
       email: "",
       password: "",
     },
-    onSubmit: (): void => {
+    onSubmit: async (): Promise<void> => {
       console.log("submitting", formik.values);
+      loginUser(formik.values);
     },
     validationSchema: Yup.object().shape({
       email: Yup.string().email("Invalid email address").required("Required"),

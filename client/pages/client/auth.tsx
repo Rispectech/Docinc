@@ -13,6 +13,7 @@ const theme = createTheme();
 const UserAuth = () => {
   const [haveAccount, setHaveAccount] = React.useState(true);
   const [isVerifModalOpen, setIsVerifModalOpen] = React.useState(false);
+  const [clientInfo, setClientInfo] = React.useState<clientType | undefined>();
 
   const FormProps = {
     entity: "Client",
@@ -24,12 +25,21 @@ const UserAuth = () => {
   };
 
   const handleVerification = async (otp: string) => {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/register`,
-      {
-        otp,
+    try {
+      console.log(otp);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/verifyOtp`,
+        {
+          otp,
+          id: clientInfo?._id,
+        }
+      );
+      console.log(res);
+      if (res.status === 200) {
+        setIsVerifModalOpen(false);
+        setHaveAccount(true);
       }
-    );
+    } catch (error) {}
   };
 
   const registerUser = async (body: formikSignUpInitialValues) => {
@@ -42,11 +52,31 @@ const UserAuth = () => {
       console.log(res);
       if (res.status === 200) {
         setIsVerifModalOpen(true);
+        setClientInfo(res.data.data);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  const loginUser = async (body: formikSignInInitialValues) => {
+    try {
+      console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/login`,
+        body
+      );
+      console.log(res);
+      if (res.status === 200) {
+        setIsVerifModalOpen(true);
+        setClientInfo(res.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  173;
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -56,11 +86,15 @@ const UserAuth = () => {
         </Grid>
         <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
           {haveAccount ? (
-            <SignInForm {...FormProps} />
+            <SignInForm {...FormProps} loginUser={loginUser} />
           ) : (
             <SignUpForm {...FormProps} registerUser={registerUser} />
           )}
-          <VerificationDialog handleClose={handleClose} isVerifModalOpen={isVerifModalOpen} />
+          <VerificationDialog
+            handleClose={handleClose}
+            isVerifModalOpen={isVerifModalOpen}
+            handleVerification={handleVerification}
+          />
         </Grid>
       </Grid>
     </ThemeProvider>

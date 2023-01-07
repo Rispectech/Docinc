@@ -10,6 +10,7 @@ import "@fontsource/roboto/700.css";
 
 import createEmotionCache from "../utility/createEmotionCache";
 import lightThemeOptions from "../styles/theme/lightThemeOptions";
+import { AppProvider } from "../context/context";
 
 interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
@@ -26,7 +27,9 @@ const MyApp: React.FunctionComponent<MyAppProps> = (props) => {
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={lightTheme}>
         <CssBaseline />
-        <Component {...pageProps} />
+        <AppProvider>
+          <Component {...pageProps} />
+        </AppProvider>
       </ThemeProvider>
     </CacheProvider>
   );

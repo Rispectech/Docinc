@@ -1,3 +1,4 @@
+import React from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -9,7 +10,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 const VerificationDialog: React.FC<verificationDialogProps> = ({
   isVerifModalOpen,
   handleClose,
+  handleVerification,
 }) => {
+  const [otp, setOtp] = React.useState("");
   return (
     <Dialog open={isVerifModalOpen} onClose={handleClose}>
       <DialogTitle>Verification</DialogTitle>
@@ -26,11 +29,13 @@ const VerificationDialog: React.FC<verificationDialogProps> = ({
           type="text"
           fullWidth
           variant="standard"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleClose}>Verify</Button>
+        <Button onClick={() => handleVerification(otp)}>Verify</Button>
       </DialogActions>
     </Dialog>
   );

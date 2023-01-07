@@ -16,8 +16,8 @@ clientRouter.route("/api/client/register").post(checkSignup, clientSignupHandler
 clientRouter.route("/api/client/login").post(clientLoginHandler);
 clientRouter.route("/api/sessions").get(deserializeClient, getSessionHandler);
 clientRouter.route("/api/client/logout").delete(deserializeClient, deleteSessionHandler);
-clientRouter.route("/api/client/verifyOtp").post(deserializeClient, verifyOtpHandler);
-clientRouter.route("/api/client/resendOtp").get(deserializeClient, resendOtpHandler);
+clientRouter.route("/api/client/verifyOtp").post(verifyOtpHandler);
+clientRouter.route("/api/client/resendOtp").get(resendOtpHandler);
 clientRouter
   .route("/api/client/requestPasswordReset")
   .post(deserializeClient, sendResetClientPasswordEmailHandler);

@@ -12,7 +12,7 @@ import Typography from "@mui/material/Typography";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-const SignUpForm: React.FC<SignUpComponentProps> = ({
+const SignUpForm: React.FC<signUpComponentProps> = ({
   entity,
   setHaveAccount,
   registerUser,

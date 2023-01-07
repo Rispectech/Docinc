@@ -100,7 +100,8 @@ const clientLoginHandler = async (req, res, next) => {
 
 const verifyOtpHandler = async (req, res) => {
   try {
-    const ClientId = req.Client._id;
+    // const ClientId = req.Client._id;
+    const ClientId = req.body.id;
     const body_otp = req.body.otp;
 
     if (!ClientId && !body_otp) {
@@ -144,7 +145,7 @@ const verifyOtpHandler = async (req, res) => {
     }
 
     await clientModel.updateOne({ _id: ClientId }, { verified: true });
-    await otpVerificationModel.deleteMany({ _id: ClientId });
+    // await otpVerificationModel.deleteMany({ _id: ClientId });
     return res.status(200).json({
       status: "success",
       message: "Client is verified",
@@ -156,7 +157,7 @@ const verifyOtpHandler = async (req, res) => {
 
 const resendOtpHandler = async (req, res) => {
   try {
-    const { _id, email } = req.Client;
+    const { _id, email } = req.body.client;
 
     await otpVerificationModel.deleteMany({ entityId: _id });
     const data = await sendOtpVerificationEmail(email, _id);
