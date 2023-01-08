@@ -3,9 +3,8 @@ const { userSchema } = require("./User");
 
 const sessionSchema = mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    entity: {
+      type: String,
     },
     valid: {
       type: Boolean,

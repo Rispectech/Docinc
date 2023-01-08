@@ -11,6 +11,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ResetButton } from "../../styles/components/auth";
 
 const SignUpForm: React.FC<signUpComponentProps> = ({
   entity,
@@ -130,15 +131,10 @@ const SignUpForm: React.FC<signUpComponentProps> = ({
           Sign Up
         </Button>
         <Grid container>
-          <Grid item xs>
-            <Link href="#" variant="body2">
-              Forgot password?
-            </Link>
-          </Grid>
           <Grid item>
-            <Link href="#" variant="body2" onClick={() => setHaveAccount(true)}>
-              {"Already have an account? Sign In"}
-            </Link>
+            <ResetButton variant="body2" onClick={() => setHaveAccount(true)}>
+              {"Don't have an account? Sign Up"}
+            </ResetButton>
           </Grid>
         </Grid>
         <Copyright sx={{ mt: 5 }} />

@@ -8,11 +8,18 @@ import ParticleComponent from "../../components/global/particles";
 import { SignInForm } from "../../components/global/SigninForm";
 import { SignUpForm } from "../../components/global/SignUpForm";
 import VerificationDialog from "../../components/global/VerificationDialog";
+import { useAppContext } from "../../context/context";
+import { setCookie } from "../../utils/Cookies";
+import { useRouter } from "next/router";
+import ResetPasswordDialog from "../../components/global/ResetPasswordDialog";
 const theme = createTheme();
 
 const UserAuth = () => {
+  const router = useRouter();
+  const { createSession } = useAppContext();
   const [haveAccount, setHaveAccount] = React.useState(true);
   const [isVerifModalOpen, setIsVerifModalOpen] = React.useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = React.useState(false);
   const [clientInfo, setClientInfo] = React.useState<clientType | undefined>();
 
   const FormProps = {
@@ -22,6 +29,11 @@ const UserAuth = () => {
 
   const handleClose = () => {
     setIsVerifModalOpen(false);
+    setIsResetModalOpen(false);
+  };
+
+  const handleResetOpen = () => {
+    setIsResetModalOpen(true);
   };
 
   const handleVerification = async (otp: string) => {
@@ -38,6 +50,13 @@ const UserAuth = () => {
       if (res.status === 200) {
         setIsVerifModalOpen(false);
         setHaveAccount(true);
+
+        if (clientInfo?.accessToken) {
+          await createSession("Client", clientInfo?.accessToken);
+          setCookie("refreshToken", clientInfo?.refreshToken as String, 2);
+          setCookie("entity", "Client", 2);
+          router.push("/");
+        }
       }
     } catch (error) {}
   };
@@ -71,12 +90,28 @@ const UserAuth = () => {
         setIsVerifModalOpen(true);
         setClientInfo(res.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      return error.response;
     }
   };
 
-  173;
+  const handleForgetPassword = async (email: string) => {
+    try {
+      console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/requestPasswordReset`,
+        {
+          email: email,
+          redirectUrl: `${process.env.NEXT_PUBLIC_WEB_ENDPOINT}/client/resetPassword`,
+        }
+      );
+      console.log(res);
+      if (res.status === 200) return true;
+      else return false;
+    } catch (error) {}
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -86,7 +121,11 @@ const UserAuth = () => {
         </Grid>
         <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
           {haveAccount ? (
-            <SignInForm {...FormProps} loginUser={loginUser} />
+            <SignInForm
+              {...FormProps}
+              loginUser={loginUser}
+              handleResetOpen={handleResetOpen}
+            />
           ) : (
             <SignUpForm {...FormProps} registerUser={registerUser} />
           )}
@@ -94,6 +133,12 @@ const UserAuth = () => {
             handleClose={handleClose}
             isVerifModalOpen={isVerifModalOpen}
             handleVerification={handleVerification}
+            clientInfo={clientInfo}
+          />
+          <ResetPasswordDialog
+            handleClose={handleClose}
+            isResetModalOpen={isResetModalOpen}
+            handleForgetPassword={handleForgetPassword}
           />
         </Grid>
       </Grid>

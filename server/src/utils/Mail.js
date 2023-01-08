@@ -42,6 +42,7 @@ const sendOtpVerificationEmail = async (email, _id) => {
 
   try {
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+    console.log(otp);
 
     let mailOptions = {
       from: process.env.EMAIL_USER, // sender address

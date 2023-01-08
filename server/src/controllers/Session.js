@@ -2,7 +2,7 @@ const { userModel } = require("../models/User");
 const { createSession, findSession, updateSession } = require("../services/Session");
 const { validateUserPassword } = require("../services/User");
 const { CreateErrorClass } = require("../utils/error");
-const { signJwt } = require("../utils/Jwt");
+const { signJwt, verifyJwt } = require("../utils/Jwt");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -89,6 +89,7 @@ const deleteSessionHandler = async (req, res) => {
     });
   } catch (error) {}
 };
+
 module.exports = {
   getSessionHandler,
   createSessionHandler,

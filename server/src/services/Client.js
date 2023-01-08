@@ -5,6 +5,8 @@ const { resetPasswordModel } = require("../models/ResetPassword");
 const { clientModel } = require("../models/Client");
 const { CreateErrorClass } = require("../utils/error");
 const { sendEmail, getHrTime } = require("../utils/Mail");
+const { verifyJwt, signJwt } = require("../utils/Jwt");
+const { sessionModel } = require("../models/Session");
 
 const findClient = async (query) => {
   return await clientModel.findOne(query);
@@ -55,10 +57,36 @@ const sendResetEmail = async (Client, redirectUrl) => {
   }
 };
 
+const reIssueAccessToken = async (refreshToken) => {
+  const decoded = verifyJwt(refreshToken);
+
+  if (!decoded && !decoded._id) return false;
+
+  // console.log(decoded);
+
+  const session = await sessionModel.findOne({ _id: decoded.decoded.session });
+
+  // console.log(session);
+
+  if (!session || !session.valid) return false;
+  // console.log(session);
+  const client = await findClient({ _id: session.entity });
+
+  if (!client) return false;
+
+  const accessToken = signJwt(
+    { client: client._id, session: session._id },
+    { expiresIn: "2h" } // 15 minutes
+  );
+
+  return accessToken;
+};
+
 module.exports = {
   upsertClient,
   createClient,
   validateClientPassword,
   findClient,
   sendResetEmail,
+  reIssueAccessToken,
 };

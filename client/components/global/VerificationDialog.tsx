@@ -11,6 +11,7 @@ const VerificationDialog: React.FC<verificationDialogProps> = ({
   isVerifModalOpen,
   handleClose,
   handleVerification,
+  clientInfo,
 }) => {
   const [otp, setOtp] = React.useState("");
   return (

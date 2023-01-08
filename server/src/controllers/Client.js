@@ -10,9 +10,10 @@ const {
   sendResetEmail,
   validateClientPassword,
   upsertClient,
+  reIssueAccessToken,
 } = require("../services/Client");
 const { CreateErrorClass } = require("../utils/error");
-const { signJwt } = require("../utils/Jwt");
+const { signJwt, verifyJwt } = require("../utils/Jwt");
 const { resetPasswordModel } = require("../models/ResetPassword");
 const { compareHash, generateHash } = require("../utils/bycrpt");
 
@@ -65,7 +66,11 @@ const clientLoginHandler = async (req, res, next) => {
     if (!validateClientPassword(ClientBody.password, Client))
       return res.status(500).json({ status: "failure", message: "Invalid Password" });
 
-    const session = createSession(Client._id, req.get("Client-agent") || "");
+    const session = await createSession(Client._id, req.get("Client-agent") || "");
+
+    console.log(session);
+
+    const verifiedOtp = await sendOtpVerificationEmail(Client.email, Client._id);
 
     const accessToken = signJwt(
       {
@@ -87,11 +92,16 @@ const clientLoginHandler = async (req, res, next) => {
       }
     );
 
-    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+    // res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 
     res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
-    return res.status(200).json({ status: "success", data: { accessToken, refreshToken } });
+    const Client_obj = Client.toObject();
+    delete Client_obj.password;
+
+    return res
+      .status(200)
+      .json({ status: "success", data: { accessToken, ...Client_obj, refreshToken } });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failure", message: "couldnt create session" });
@@ -102,6 +112,7 @@ const verifyOtpHandler = async (req, res) => {
   try {
     // const ClientId = req.Client._id;
     const ClientId = req.body.id;
+    console.log(ClientId);
     const body_otp = req.body.otp;
 
     if (!ClientId && !body_otp) {
@@ -111,7 +122,9 @@ const verifyOtpHandler = async (req, res) => {
       });
     }
 
-    const ClientOtpRecords = await otpVerificationModel.find({ entityId: ClientId });
+    const ClientOtpRecords = await otpVerificationModel
+      .find({ entityId: ClientId })
+      .sort({ createdAt: -1 });
     if (ClientOtpRecords.length < 0) {
       res.status(500).json({
         status: "failure",
@@ -123,13 +136,15 @@ const verifyOtpHandler = async (req, res) => {
 
     const { expiresAt, otp } = ClientOtpRecords[0];
 
-    // if (expiresAt < Date.now()) {
-    //   await otpVerificationModel.deleteMany({ entityId: ClientId });
-    //   return res.status(500).json({
-    //     status: "failure",
-    //     message: "Code has expired . Please request again",
-    //   });
-    // }
+    if (expiresAt < Date.now()) {
+      console.log("working");
+
+      await otpVerificationModel.deleteMany({ entityId: ClientId });
+      return res.status(500).json({
+        status: "failure",
+        message: "Code has expired . Please request again",
+      });
+    }
 
     console.log(body_otp, otp);
 
@@ -145,7 +160,7 @@ const verifyOtpHandler = async (req, res) => {
     }
 
     await clientModel.updateOne({ _id: ClientId }, { verified: true });
-    // await otpVerificationModel.deleteMany({ _id: ClientId });
+    await otpVerificationModel.deleteMany({ _id: ClientId });
     return res.status(200).json({
       status: "success",
       message: "Client is verified",
@@ -170,18 +185,26 @@ const resendOtpHandler = async (req, res) => {
 
 const sendResetClientPasswordEmailHandler = async (req, res) => {
   try {
-    const Client = req.Client;
+    const email = req.body.email;
     const redirectUrl = req.body.redirectUrl;
 
-    if (!Client.verified) {
-      console.log(error);
-      res.status(500).json({ status: "failure", message: "Client not verified" });
-    }
+    const client = await findClient({ email });
 
-    const newPasswordReturn = await sendResetEmail(Client, redirectUrl);
+    if (!client) {
+      res.status(500).json({ status: "failure", message: "Client not registered" });
+    }
+    // if (!Client.verified) {
+    //   console.log(error);
+    //   res.status(500).json({ status: "failure", message: "Client not verified" });
+    // }
+
+    console.log(client);
+
+    const newPasswordReturn = await sendResetEmail(client, redirectUrl);
     res.status(200).json({
       status: "Pending",
       message: "Resend Link sent",
+      data: client,
     });
   } catch (error) {
     console.log(error);
@@ -191,10 +214,14 @@ const sendResetClientPasswordEmailHandler = async (req, res) => {
 
 const resetClientPasswordHandler = async (req, res) => {
   try {
-    const ClientId = req.Client._id;
+    const ClientId = req.body.id;
     const { resetSequence, newPassword } = req.body;
 
-    const resetPasswordObject = await resetPasswordModel.find({ entityId: ClientId });
+    const resetPasswordObject = await resetPasswordModel
+      .find({ entityId: ClientId })
+      .sort({ createdAt: -1 });
+
+    // console.log(resetPasswordObject, resetPasswordObject[0].expiresAt < Date.now());
 
     if (!resetPasswordObject.length > 0) {
       return res
@@ -212,6 +239,8 @@ const resetClientPasswordHandler = async (req, res) => {
     console.log(token);
 
     if (!token) {
+      // console.log("working");
+      // await resetPasswordModel.deleteOne({ entityId: ClientId });
       return res.status(500).json({ status: "failure", message: "Invalid Token" });
     }
 
@@ -226,7 +255,7 @@ const resetClientPasswordHandler = async (req, res) => {
       res.status(500).json({ status: "failure", message: "Password couldnt be changes" });
     }
 
-    await resetPasswordModel.deleteOne({ entityId: ClientId });
+    // await resetPasswordModel.deleteOne({ entityId: ClientId });
     res.status(200).json({ status: "success", message: "Password was changed" });
   } catch (error) {
     console.log(error);
@@ -237,8 +266,30 @@ const resetClientPasswordHandler = async (req, res) => {
 };
 
 // testing controller
+const refreshClientAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.body.refreshToken;
 
-const resetClientVerification = async (req, res) => {};
+    const { decoded, expired } = verifyJwt(refreshToken);
+
+    const client = clientModel.findOne({ _id: decoded });
+
+    if (!client) {
+      res.status(401).json({ status: "failure", message: "User doesn't exist" });
+    }
+
+    const accessToken = await reIssueAccessToken(refreshToken);
+    res.status(200).json({
+      status: "success",
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   clientSignupHandler,
   clientLoginHandler,
@@ -246,4 +297,5 @@ module.exports = {
   resendOtpHandler,
   sendResetClientPasswordEmailHandler,
   resetClientPasswordHandler,
+  refreshClientAccessToken,
 };

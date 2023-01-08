@@ -11,23 +11,44 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ResetButton } from "../../styles/components/auth";
 
-const SignInForm: React.FC<SignInComponentProps> = ({ entity, setHaveAccount, loginUser }) => {
+const SignInForm: React.FC<signInComponentProps> = ({
+  entity,
+  setHaveAccount,
+  loginUser,
+  handleResetOpen,
+}) => {
   const formik = useFormik<formikSignInInitialValues>({
     initialValues: {
       email: "",
       password: "",
     },
     onSubmit: async (): Promise<void> => {
-      console.log("submitting", formik.values);
-      loginUser(formik.values);
+      // console.log("submitting", formik.values);
+      const res = (await loginUser(formik.values)) as unknown as {
+        data: {
+          message: string;
+          status: string;
+        };
+      };
+
+      if (res.data.message === "Invalid Password") {
+        formik.setErrors({ password: "Invalid Password" });
+      }
+
+      if (res.data.message === "Invalid Email") {
+        formik.setErrors({ email: "Invalid Email" });
+      }
+
+      console.log(res);
     },
     validationSchema: Yup.object().shape({
       email: Yup.string().email("Invalid email address").required("Required"),
     }),
   });
 
-  console.log(formik.values);
+  // console.log(formik.errors);
 
   return (
     <Box
@@ -59,6 +80,9 @@ const SignInForm: React.FC<SignInComponentProps> = ({ entity, setHaveAccount, lo
           value={formik.values.email}
           onChange={formik.handleChange}
           error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={
+            formik.touched.email && formik.errors.email && String(formik.errors.email)
+          }
         />
         <TextField
           margin="normal"
@@ -72,6 +96,9 @@ const SignInForm: React.FC<SignInComponentProps> = ({ entity, setHaveAccount, lo
           value={formik.values.password}
           onChange={formik.handleChange}
           error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={
+            formik.touched.password && formik.errors.password && String(formik.errors.password)
+          }
         />
         <FormControlLabel
           control={<Checkbox value="remember" color="primary" />}
@@ -82,14 +109,14 @@ const SignInForm: React.FC<SignInComponentProps> = ({ entity, setHaveAccount, lo
         </Button>
         <Grid container>
           <Grid item xs>
-            <Link href="#" variant="body2">
+            <ResetButton variant="body2" onClick={handleResetOpen}>
               Forgot password?
-            </Link>
+            </ResetButton>
           </Grid>
           <Grid item>
-            <Link href="#" variant="body2" onClick={() => setHaveAccount(false)}>
+            <ResetButton variant="body2" onClick={() => setHaveAccount(false)}>
               {"Don't have an account? Sign Up"}
-            </Link>
+            </ResetButton>
           </Grid>
         </Grid>
         <Copyright sx={{ mt: 5 }} />

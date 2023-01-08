@@ -1,46 +1,76 @@
 interface formikSignInInitialValues {
-  email: String;
-  password: String;
+  email: string;
+  password: string;
 }
 
 interface formikSignUpInitialValues extends formikSignInInitialValues {
-  name: String;
-  confirmPassword: String;
+  name: string;
+  confirmPassword: string;
 }
 
 interface formPropsType {
-  entity: String;
+  entity: string;
   setHaveAccount: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-interface SignUpComponentProps extends formPropsType {
+interface signUpComponentProps extends formPropsType {
   registerUser: (body: formikSignUpInitialValues) => Promise<void>;
 }
 
-interface SignInComponentProps extends formPropsType {
+interface signInComponentProps extends formPropsType {
   loginUser: (body: formikSignInInitialValues) => Promise<void>;
+  handleResetOpen: () => void;
 }
 
 interface verificationDialogProps {
   isVerifModalOpen: boolean;
   handleClose: () => void;
   handleVerification: (otp: string) => Promise<void>;
+  clientInfo: clientType | undefined;
 }
 
-interface ClientType {
-  createdAt: String;
-  email: String;
-  name: String;
-  updatedAt: String;
+interface clientType {
+  createdAt: string;
+  email: string;
+  name: string;
+  updatedAt: string;
   verified: Boolean;
   __v: number;
-  _id: String;
+  _id: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
-interface AuthContextType {
-  accessToken: String;
+interface authContextType extends authStateContextType {
+  createSession: (entity: string, accessToken: string) => void;
+  isUserAuthenticated: () => !!authState.token;
 }
 
-interface ChildrenPropsType {
+interface authStateContextType {
+  accessToken: string;
+  entity: string;
+  isLoading: boolean;
+}
+
+interface childrenPropsType {
   children: React.ReactNode;
+}
+
+interface createSessionType {
+  accessToken: string;
+  entity: string;
+}
+
+interface resetPasswordDialogProps {
+  isResetModalOpen: boolean;
+  handleClose: () => void;
+  handleForgetPassword: (email: string) => Promise<boolean | undefined>;
+}
+
+interface signinRequestErrors {
+  error: string;
+  message: {
+    email: string;
+    password: string;
+  };
 }
