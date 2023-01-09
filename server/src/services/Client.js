@@ -10,7 +10,7 @@ const { verifyJwt, signJwt } = require("../utils/Jwt");
 const { sessionModel } = require("../models/Session");
 
 const makeDir = (id) => {
-  var dir = `${__dirname},./../../${id}`;
+  var dir = `${__dirname}/../../../${id}`;
 
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);

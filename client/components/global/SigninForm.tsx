@@ -49,7 +49,7 @@ const SignInForm: React.FC<signInComponentProps> = ({
   });
 
   // console.log(formik.errors);
-
+  console.log(entity);
   return (
     <Box
       sx={{
@@ -107,6 +107,7 @@ const SignInForm: React.FC<signInComponentProps> = ({
         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
           Sign In
         </Button>
+
         <Grid container>
           <Grid item xs>
             <ResetButton variant="body2" onClick={handleResetOpen}>
@@ -119,7 +120,8 @@ const SignInForm: React.FC<signInComponentProps> = ({
             </ResetButton>
           </Grid>
         </Grid>
-        <Copyright sx={{ mt: 5 }} />
+
+        {/* <Copyright sx={{ mt: 5 }} /> */}
       </Box>
     </Box>
   );

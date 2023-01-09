@@ -11,6 +11,9 @@ import { setCookie } from "../../utils/Cookies";
 import axios from "axios";
 import ResetPasswordDialog from "../../components/global/ResetPasswordDialog";
 import VerificationDialog from "../../components/global/VerificationDialog";
+import { ResetButton } from "../../styles/components/auth";
+import { Typography } from "@mui/material";
+import { SignInLinkContainer } from "../../styles/components/admin/sigin";
 
 const theme = createTheme();
 
@@ -30,6 +33,15 @@ export default function SignInSide() {
   const handleResetOpen = () => {
     setIsResetModalOpen(true);
   };
+
+  const clientSignIn = () => {
+    router.push({ pathname: "/client/auth", query: { signin: "Y" } });
+  };
+
+  const clientSignUp = () => {
+    router.push({ pathname: "/client/auth", query: { signin: "N" } });
+  };
+
   const handleVerification = async (otp: string) => {
     try {
       console.log(otp);
@@ -96,13 +108,31 @@ export default function SignInSide() {
         <Grid item xs={false} sm={4} md={7}>
           <ParticleComponent />
         </Grid>
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        <Grid
+          item
+          xs={12}
+          sm={8}
+          md={5}
+          component={Paper}
+          elevation={6}
+          square
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
           <SignInForm
             loginUser={loginUser}
             handleResetOpen={handleResetOpen}
             entity={"Admin"}
             setHaveAccount={setHaveAccount}
           />
+
+          <SignInLinkContainer color={"black"}>
+            Are you a Client ? <span onClick={clientSignUp}>SignUp</span> /{" "}
+            <span onClick={clientSignIn}>SignIn </span>
+          </SignInLinkContainer>
         </Grid>
         <VerificationDialog
           handleClose={handleClose}

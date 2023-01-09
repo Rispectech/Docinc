@@ -16,8 +16,19 @@ const theme = createTheme();
 
 const UserAuth = () => {
   const router = useRouter();
+  const {
+    query: { signin },
+  } = router;
+
+  const resolveQuery = () => {
+    if (signin === "N") return false;
+    else return true;
+  };
+
+  console.log(signin, resolveQuery(), signin === undefined);
+
   const { createSession } = useAppContext();
-  const [haveAccount, setHaveAccount] = React.useState(true);
+  const [haveAccount, setHaveAccount] = React.useState<boolean>(resolveQuery());
   const [isVerifModalOpen, setIsVerifModalOpen] = React.useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = React.useState(false);
   const [clientInfo, setClientInfo] = React.useState<clientType | undefined>();
