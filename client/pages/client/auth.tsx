@@ -4,7 +4,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import ParticleComponent from "../../components/global/particles";
+import ParticleComponent from "../../components/global/Particles";
 import { SignInForm } from "../../components/global/SigninForm";
 import { SignUpForm } from "../../components/global/SignUpForm";
 import VerificationDialog from "../../components/global/VerificationDialog";

@@ -8,12 +8,13 @@ const { userRouter } = require("./routes/User");
 const { connectDb } = require("./utils/Connect");
 const { ErrorHandler } = require("./utils/error");
 const { clientRouter } = require("./routes/Client");
+const { adminRouter } = require("./routes/Admin");
 require("dotenv").config();
 
 const port = process.env.PORT || 8000;
 const app = express();
 
-// console.log("Current directory:", __dirname);
+console.log("Current directory:", __dirname);
 
 const options = {
   key: fs.readFileSync("../key.pem"),
@@ -24,8 +25,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/", authRouter);
-app.use("/", userRouter);
+app.use("/", adminRouter);
 app.use("/", clientRouter);
+app.use("/", userRouter);
 app.use(ErrorHandler);
 
 const start = async () => {

@@ -10,6 +10,11 @@ const defaultState = {
   isLoading: true,
 };
 
+const entityRefreshLinks: { [key: string]: string } = {
+  Admin: `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/admin/refreshAccessToken`,
+  Client: `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/refreshAccessToken`,
+};
+
 const AuthContext = createContext<authContextType | undefined>(undefined);
 
 const useAppContext = (): authContextType => {
@@ -20,7 +25,6 @@ const AppProvider: React.FC<childrenPropsType> = ({ children }) => {
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, defaultState);
 
-  console.log(state);
   const isUserAuthenticated = () => !!state.accessToken;
 
   const createSession = (entity: string, accessToken: string) => {
@@ -28,18 +32,19 @@ const AppProvider: React.FC<childrenPropsType> = ({ children }) => {
   };
 
   const refreshAccesstoken = async (refreshToken: string, entity: string) => {
+    // console.log(entityRefreshLinks[entity]);
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/refreshAccessToken`,
-        {
-          refreshToken,
-        }
-      );
+      const res = await axios.post(entityRefreshLinks[entity], {
+        refreshToken,
+      });
       // console.log(res, res.data);
       createSession(entity, res.data.data.accessToken);
-      dispatch({ type: "SET_LOADING", payload: { status: false } });
+      setTimeout(() => {}, 10000);
+
+      // dispatch({ type: "SET_LOADING", payload: { status: false } });
     } catch (error) {
-      router.push("/client/auth");
+      if (entity === "Admin") router.push("/admin/auth");
+      else router.push("/client/auth");
     }
   };
 
@@ -47,12 +52,22 @@ const AppProvider: React.FC<childrenPropsType> = ({ children }) => {
     const refreshToken = getCookie("refreshToken");
     const entity = getCookie("entity");
 
-    if (refreshToken && entity === "Client" && state.accessToken === "") {
-      refreshAccesstoken(refreshToken, entity);
+    if (refreshToken && entity && state.accessToken === "") {
+      // console.log("working");
+      refreshAccesstoken(refreshToken, entity)
+        .then(() => {
+          dispatch({ type: "SET_LOADING", payload: { status: false } });
+        })
+        .catch((error) => console.log(error));
+      return;
     }
-  });
 
-  console.log(state);
+    // setTimeout(() => {}, 10000);
+
+    dispatch({ type: "SET_LOADING", payload: { status: false } });
+  }, [state.isLoading]);
+
+  // console.log(state, isUserAuthenticated());
   return (
     <AuthContext.Provider value={{ ...state, createSession, isUserAuthenticated }}>
       {children}

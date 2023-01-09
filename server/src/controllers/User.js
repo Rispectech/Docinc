@@ -15,6 +15,7 @@ const { CreateErrorClass } = require("../utils/error");
 const { signJwt } = require("../utils/Jwt");
 const { resetPasswordModel } = require("../models/ResetPassword");
 const { compareHash, generateHash } = require("../utils/bycrpt");
+const { makeDir } = require("../services/Client");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -46,6 +47,7 @@ const userSignupHandler = async (req, res, next) => {
     const user_obj = user.toObject();
     delete user_obj.password;
     // console.log(user_obj);
+    makeDir(user_obj._id);
     res.status(200).json({ status: "success", data: user_obj });
   } catch (error) {
     console.log(error);

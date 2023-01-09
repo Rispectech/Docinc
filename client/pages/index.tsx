@@ -6,13 +6,15 @@ import { useAppContext } from "../context/context";
 const Home: NextPage = () => {
   const router = useRouter();
   const { entity, isUserAuthenticated, isLoading } = useAppContext();
-  console.log(useAppContext());
+  const authenticated = isUserAuthenticated();
+  // console.log(useAppContext());
   React.useEffect(() => {
     // checks if the user is authenticated
-    console.log(isUserAuthenticated());
+    console.log("user authenticated :  ", isUserAuthenticated(), isLoading);
     if (!isLoading) isUserAuthenticated() ? router.push("/") : router.push("/admin/signin");
-  }, []);
-  return <> {isLoading ? "Loading..." : "  entity signin"}</>;
+  }, [isLoading, authenticated]);
+
+  return <> {isLoading ? "Loading..." : `${entity} signin`}</>;
 };
 
 export default Home;
