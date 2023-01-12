@@ -107,7 +107,7 @@ const deserializeAdmin = async (req, res, next) => {
 
     // console.log(header);
 
-    const refreshToken = req.header["x-refresh"];
+    // const refreshToken = req.header["x-refresh"];
     if (!header) {
       res.status(401).json({ status: "failure", message: "Unauthorized request" });
     }
@@ -116,12 +116,13 @@ const deserializeAdmin = async (req, res, next) => {
 
     const { decoded, expired } = verifyJwt(token);
 
-    const user = await adminModel.findOne({ _id: decoded.userId });
+    console.log(decoded);
+    const user = await adminModel.findOne({ _id: decoded.Admin });
 
     // console.log(user);
 
     if (!user) {
-      res
+      return res
         .status(500)
         .json({ status: "failure", message: "No user present while checking token" });
     }
@@ -131,17 +132,17 @@ const deserializeAdmin = async (req, res, next) => {
       return next();
     }
 
-    if (expired && refreshToken) {
-      const accessToken = await reIssueAccessToken(refreshToken);
+    // if (expired && refreshToken) {
+    //   const accessToken = await reIssueAccessToken(refreshToken);
 
-      if (accessToken) {
-        res.setHeader("x-access-token", accessToken);
-      }
+    //   if (accessToken) {
+    //     res.setHeader("x-access-token", accessToken);
+    //   }
 
-      const result = verifyJwt(accessToken);
-      res.user = result.decoded;
-      next();
-    }
+    //   const result = verifyJwt(accessToken);
+    //   res.user = result.decoded;
+    //   next();
+    // }
 
     next();
   } catch (error) {

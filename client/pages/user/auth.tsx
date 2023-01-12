@@ -6,13 +6,12 @@ import Grid from "@mui/material/Grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import ParticleComponent from "../../components/global/Particles";
 import { SignInForm } from "../../components/global/SigninForm";
+import { SignUpForm } from "../../components/global/SignUpForm";
 import VerificationDialog from "../../components/global/VerificationDialog";
 import { useAppContext } from "../../context/context";
 import { setCookie } from "../../utils/Cookies";
 import { useRouter } from "next/router";
 import ResetPasswordDialog from "../../components/global/ResetPasswordDialog";
-import { ClientSignUpForm } from "../../components/Client/SignUpform";
-import { SignUpForm } from "../../components/global/SignUpForm";
 const theme = createTheme();
 
 const UserAuth = () => {
@@ -35,7 +34,7 @@ const UserAuth = () => {
   const [clientInfo, setClientInfo] = React.useState<clientType | undefined>();
 
   const FormProps = {
-    entity: "Client",
+    entity: "User",
     setHaveAccount,
   };
 
@@ -52,7 +51,7 @@ const UserAuth = () => {
     try {
       console.log(otp);
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/verifyOtp`,
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/verifyOtp`,
         {
           otp,
           id: clientInfo?._id,
@@ -64,9 +63,9 @@ const UserAuth = () => {
         setHaveAccount(true);
 
         if (clientInfo?.accessToken) {
-          await createSession("Client", clientInfo?.accessToken);
+          await createSession("User", clientInfo?.accessToken);
           setCookie("refreshToken", clientInfo?.refreshToken as String, 2);
-          setCookie("entity", "Client", 2);
+          setCookie("entity", "User", 2);
           router.push("/");
         }
       }
@@ -77,7 +76,7 @@ const UserAuth = () => {
     try {
       console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/register`,
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/register`,
         body
       );
       console.log(res);
@@ -94,7 +93,7 @@ const UserAuth = () => {
     try {
       console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/login`,
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/login`,
         body
       );
       console.log(res);
@@ -112,15 +111,15 @@ const UserAuth = () => {
     try {
       // console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/oauth/google`
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/oauth/google`
       );
       console.log(res);
       if (res.status === 200) {
         setIsVerifModalOpen(true);
         const client = res.data.data;
-        await createSession("Client", client?.accessToken);
+        await createSession("User", client?.accessToken);
         setCookie("refreshToken", client?.refreshToken as String, 2);
-        setCookie("entity", "Client", 2);
+        setCookie("entity", "User", 2);
         router.push("/");
       }
     } catch (error: any) {
@@ -133,10 +132,10 @@ const UserAuth = () => {
     try {
       console.log(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/client/requestPasswordReset`,
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/user/requestPasswordReset`,
         {
           email: email,
-          redirectUrl: `${process.env.NEXT_PUBLIC_WEB_ENDPOINT}/client/resetPassword`,
+          redirectUrl: `${process.env.NEXT_PUBLIC_WEB_ENDPOINT}/user/resetPassword`,
         }
       );
       console.log(res);
@@ -152,21 +151,7 @@ const UserAuth = () => {
         <Grid item xs={false} sm={4} md={7}>
           <ParticleComponent />
         </Grid>
-        <Grid
-          item
-          xs={12}
-          sm={8}
-          md={5}
-          component={Paper}
-          elevation={6}
-          square
-          sx={{
-            overflowY: "scroll",
-            overflowX: "hidden",
-            boxSizing: "border-box",
-            maxHeight: "100vh",
-          }}
-        >
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
           {haveAccount ? (
             <SignInForm
               {...FormProps}
@@ -175,7 +160,7 @@ const UserAuth = () => {
               googleLogin={googleLogin}
             />
           ) : (
-            <ClientSignUpForm {...FormProps} registerUser={registerUser} />
+            <SignUpForm {...FormProps} registerUser={registerUser} />
           )}
           <VerificationDialog
             handleClose={handleClose}

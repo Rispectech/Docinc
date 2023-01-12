@@ -44,10 +44,10 @@ const userSignupHandler = async (req, res, next) => {
     const verifiedOtp = await sendOtpVerificationEmail(user.email, user._id);
 
     console.log(verifiedOtp);
+
     const user_obj = user.toObject();
     delete user_obj.password;
     // console.log(user_obj);
-    makeDir(user_obj._id);
     res.status(200).json({ status: "success", data: user_obj });
   } catch (error) {
     console.log(error);
@@ -102,7 +102,7 @@ const userLoginHandler = async (req, res, next) => {
 
 const verifyOtpHandler = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.body.id;
     const body_otp = req.body.otp;
 
     if (!userId && !body_otp) {
@@ -158,7 +158,7 @@ const verifyOtpHandler = async (req, res) => {
 
 const resendOtpHandler = async (req, res) => {
   try {
-    const { _id, email } = req.user;
+    const { _id, email } = req.body.client;
 
     await otpVerificationModel.deleteMany({ entityId: _id });
     const data = await sendOtpVerificationEmail(email, _id);
@@ -171,7 +171,7 @@ const resendOtpHandler = async (req, res) => {
 
 const sendResetUserPasswordEmailHandler = async (req, res) => {
   try {
-    const user = req.user;
+    const user = req.body.email;
     const redirectUrl = req.body.redirectUrl;
 
     if (!user.verified) {
@@ -192,7 +192,7 @@ const sendResetUserPasswordEmailHandler = async (req, res) => {
 
 const resetUserPasswordHandler = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.body._id;
     const { resetSequence, newPassword } = req.body;
 
     const resetPasswordObject = await resetPasswordModel.find({ entityId: userId });
@@ -239,7 +239,29 @@ const resetUserPasswordHandler = async (req, res) => {
 
 // testing controller
 
-const resetUserVerification = async (req, res) => {};
+const refreshUserAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+
+    const { decoded, expired } = verifyJwt(refreshToken);
+
+    const client = userModel.findOne({ _id: decoded });
+
+    if (!client) {
+      res.status(401).json({ status: "failure", message: "User doesn't exist" });
+    }
+
+    const accessToken = await reIssueAccessToken(refreshToken);
+    res.status(200).json({
+      status: "success",
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports = {
   userSignupHandler,
   userLoginHandler,
@@ -247,4 +269,5 @@ module.exports = {
   resendOtpHandler,
   sendResetUserPasswordEmailHandler,
   resetUserPasswordHandler,
+  refreshUserAccessToken,
 };

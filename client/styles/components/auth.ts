@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 const ResetButton = styled(Typography)({
-  margin: 0,
+  margin: "0rem 0rem 2rem",
   fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
   fontWeight: 400,
   fontSize: "0.875rem",
@@ -19,4 +19,12 @@ const ResetButton = styled(Typography)({
   },
 });
 
-export { ResetButton };
+const GoogleContainer = styled("div")({
+  margin: "6rem 0rem",
+
+  "& > div": {
+    width: "100% !important",
+  },
+});
+
+export { ResetButton, GoogleContainer };

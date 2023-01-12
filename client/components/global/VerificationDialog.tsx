@@ -36,7 +36,14 @@ const VerificationDialog: React.FC<verificationDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={() => handleVerification(otp)}>Verify</Button>
+        <Button
+          onClick={() => {
+            handleVerification(otp);
+            setOtp("");
+          }}
+        >
+          Verify
+        </Button>
       </DialogActions>
     </Dialog>
   );

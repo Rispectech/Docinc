@@ -24,6 +24,46 @@ const clientSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    companyEmail: {
+      type: String,
+      required: [true, "Email is required"],
+    },
+
+    address: {
+      type: String,
+    },
+    companyMobile: {
+      type: String,
+      required: [true, "Mobile is required"],
+    },
+
+    gst: {
+      type: String,
+      required: [true, "Gst number is required"],
+    },
+
+    mobile: {
+      type: String,
+      required: [true, "Mobile Number is required"],
+    },
+
+    license: {
+      type: String,
+      required: [true, "License is required"],
+      enum: ["Qr Based", "Tenure Based"],
+    },
+
+    qr: {
+      type: Number,
+      required: [true, "QR qouta is required"],
+    },
+
+    organization: {
+      type: String,
+      required: [true, "Organization is required"],
+      enum: ["Education", "Bank", "Insurance", "Others"],
+    },
   },
   {
     timestamps: true,

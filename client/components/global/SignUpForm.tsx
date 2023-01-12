@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import { useFormik } from "formik";
+import { useFormik, withFormik } from "formik";
 import * as Yup from "yup";
 import { ResetButton } from "../../styles/components/auth";
 
@@ -25,7 +25,7 @@ const SignUpForm: React.FC<signUpComponentProps> = ({
       password: "",
       confirmPassword: "",
     },
-    onSubmit: (): void => {
+    onSubmit: () => {
       console.log("submitting", formik.values);
       console.log(formik.errors);
       registerUser(formik.values);
@@ -49,7 +49,7 @@ const SignUpForm: React.FC<signUpComponentProps> = ({
   return (
     <Box
       sx={{
-        my: 8,
+        my: entity === "Client" ? 4 : 8,
         mx: 4,
         display: "flex",
         flexDirection: "column",
@@ -123,10 +123,6 @@ const SignUpForm: React.FC<signUpComponentProps> = ({
           helperText={formik.touched.confirmPassword && String(formik.errors.confirmPassword)}
         />
 
-        <FormControlLabel
-          control={<Checkbox value="remember" color="primary" />}
-          label="Remember me"
-        />
         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
           Sign Up
         </Button>
@@ -137,7 +133,7 @@ const SignUpForm: React.FC<signUpComponentProps> = ({
             </ResetButton>
           </Grid>
         </Grid>
-        <Copyright sx={{ mt: 5 }} />
+        {/* <Copyright sx={{ mt: 5 }} /> */}
       </Box>
     </Box>
   );

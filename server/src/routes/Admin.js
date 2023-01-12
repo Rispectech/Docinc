@@ -8,6 +8,7 @@ const {
   sendResetAdminPasswordEmailHandler,
   resetAdminPasswordHandler,
   refreshAdminAccessToken,
+  getAllClient,
 } = require("../controllers/Admin");
 const { deserializeAdmin } = require("../middleware/Auth");
 const { checkSignup } = require("../middleware/Signup");
@@ -20,9 +21,10 @@ adminRouter.route("/api/admin/logout").delete(deserializeAdmin, deleteSessionHan
 adminRouter.route("/api/admin/verifyOtp").post(verifyOtpHandler);
 adminRouter.route("/api/admin/resendOtp").get(resendOtpHandler);
 adminRouter.route("/api/admin/requestPasswordReset").post(sendResetAdminPasswordEmailHandler);
-
 adminRouter.route("/api/admin/resetPassword").post(resetAdminPasswordHandler);
 adminRouter.route("/api/admin/refreshAccessToken").post(refreshAdminAccessToken);
+
+adminRouter.route("/api/admin/getAllClients").get(deserializeAdmin, getAllClient);
 
 module.exports = {
   adminRouter,

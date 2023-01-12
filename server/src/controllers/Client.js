@@ -35,14 +35,15 @@ const refreshTokenCookieOptions = {
 const clientSignupHandler = async (req, res, next) => {
   try {
     const body = req.body;
-    const db_Client = await findClient({ email: body.email });
+    console.log(body);
+    const db_Client = await findClient({ companyEmail: body.companyEmail });
 
     if (db_Client) {
       next(CreateErrorClass(500, "failure", "Client already Present"));
     }
     const Client = await createClient(body);
 
-    const verifiedOtp = await sendOtpVerificationEmail(Client.email, Client._id);
+    const verifiedOtp = await sendOtpVerificationEmail(Client.companyEmail, Client._id);
 
     console.log(verifiedOtp);
     const Client_obj = Client.toObject();
@@ -58,7 +59,7 @@ const clientSignupHandler = async (req, res, next) => {
 const clientLoginHandler = async (req, res, next) => {
   try {
     const ClientBody = req.body;
-    const Client = await clientModel.findOne({ email: ClientBody.email });
+    const Client = await clientModel.findOne({ companyEmail: ClientBody.email });
 
     if (!Client) return res.status(500).json({ status: "failure", message: "Invalid Email" });
 
@@ -72,7 +73,7 @@ const clientLoginHandler = async (req, res, next) => {
 
     console.log(session);
 
-    const verifiedOtp = await sendOtpVerificationEmail(Client.email, Client._id);
+    const verifiedOtp = await sendOtpVerificationEmail(Client.companyEmail, Client._id);
 
     const accessToken = signJwt(
       {
@@ -190,7 +191,7 @@ const sendResetClientPasswordEmailHandler = async (req, res) => {
     const email = req.body.email;
     const redirectUrl = req.body.redirectUrl;
 
-    const client = await findClient({ email });
+    const client = await findClient({ companyEmail });
 
     if (!client) {
       res.status(500).json({ status: "failure", message: "Client not registered" });

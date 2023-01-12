@@ -21,6 +21,10 @@ const findClient = async (query) => {
   return await clientModel.findOne(query);
 };
 
+const findAllClient = async (query) => {
+  return await clientModel.find(query);
+};
+
 const createClient = async (ClientBody) => {
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync(ClientBody.password, salt);
@@ -49,7 +53,7 @@ const sendResetEmail = async (Client, redirectUrl) => {
     });
 
     await sendEmail(
-      Client.email,
+      Client.companyEmail,
       "Password Reset",
       `<p>We heard that you lost your password</p> 
       <p> Dont worry , use the link below to reset it </p>
@@ -99,4 +103,5 @@ module.exports = {
   sendResetEmail,
   reIssueAccessToken,
   makeDir,
+  findAllClient,
 };

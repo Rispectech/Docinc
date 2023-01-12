@@ -11,14 +11,19 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { ResetButton } from "../../styles/components/auth";
+import { GoogleContainer, ResetButton } from "../../styles/components/auth";
+import GoogleButton from "react-google-button";
+import { useRouter } from "next/router";
+import getGoogleOAuthURL from "../../utils/googleUrl";
 
 const SignInForm: React.FC<signInComponentProps> = ({
   entity,
   setHaveAccount,
   loginUser,
   handleResetOpen,
+  googleLogin,
 }) => {
+  const router = useRouter();
   const formik = useFormik<formikSignInInitialValues>({
     initialValues: {
       email: "",
@@ -100,10 +105,7 @@ const SignInForm: React.FC<signInComponentProps> = ({
             formik.touched.password && formik.errors.password && String(formik.errors.password)
           }
         />
-        <FormControlLabel
-          control={<Checkbox value="remember" color="primary" />}
-          label="Remember me"
-        />
+
         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
           Sign In
         </Button>
@@ -122,6 +124,11 @@ const SignInForm: React.FC<signInComponentProps> = ({
         </Grid>
 
         {/* <Copyright sx={{ mt: 5 }} /> */}
+        {/* {entity === "Client" && (
+          <GoogleContainer>
+            <GoogleButton onClick={() => router.push(getGoogleOAuthURL())} />
+          </GoogleContainer>
+        )} */}
       </Box>
     </Box>
   );

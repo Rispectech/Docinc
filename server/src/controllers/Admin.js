@@ -16,6 +16,7 @@ const { CreateErrorClass } = require("../utils/error");
 const { signJwt, verifyJwt } = require("../utils/Jwt");
 const { resetPasswordModel } = require("../models/ResetPassword");
 const { compareHash, generateHash } = require("../utils/bycrpt");
+const { findAllClient } = require("../services/Client");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -104,7 +105,7 @@ const adminLoginHandler = async (req, res, next) => {
       .json({ status: "success", data: { accessToken, ...Admin_obj, refreshToken } });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "failure", message: "couldnt create session" });
+    return res.status(500).json({ status: "failure", message: "couldnt create session" });
   }
 };
 
@@ -126,7 +127,7 @@ const verifyOtpHandler = async (req, res) => {
       .find({ entityId: AdminId })
       .sort({ createdAt: -1 });
     if (AdminOtpRecords.length < 0) {
-      res.status(500).json({
+      return res.status(500).json({
         status: "failure",
         message: "Account Record doesnt exist . Please login or signin",
       });
@@ -290,6 +291,21 @@ const refreshAdminAccessToken = async (req, res) => {
   }
 };
 
+const getAllClient = async (req, res) => {
+  try {
+    const admin = req.user;
+
+    const allClients = await findAllClient({});
+    console.log(allClients);
+    return res.status(200).json({ status: "success", data: allClients });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: "failure", message: "problem while getting clients" });
+  }
+};
+
 module.exports = {
   adminSignupHandler,
   adminLoginHandler,
@@ -298,4 +314,5 @@ module.exports = {
   sendResetAdminPasswordEmailHandler,
   resetAdminPasswordHandler,
   refreshAdminAccessToken,
+  getAllClient,
 };

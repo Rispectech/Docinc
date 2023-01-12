@@ -6,6 +6,16 @@ interface formikSignInInitialValues {
 interface formikSignUpInitialValues extends formikSignInInitialValues {
   name: string;
   confirmPassword: string;
+  companyName: string;
+  address: string;
+  companyMobile: string;
+  companyEmail: string;
+  gst: string;
+  mobile: string;
+  license: string;
+  qr: number;
+  organization: string;
+  location: string;
 }
 
 interface formPropsType {
@@ -20,6 +30,7 @@ interface signUpComponentProps extends formPropsType {
 interface signInComponentProps extends formPropsType {
   loginUser: (body: formikSignInInitialValues) => Promise<void>;
   handleResetOpen: () => void;
+  googleLogin?: () => void;
 }
 
 interface verificationDialogProps {

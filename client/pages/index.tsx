@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React from "react";
 import { useAppContext } from "../context/context";
+import AdminDashboard from "../components/Admin/dashboard";
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -14,7 +15,11 @@ const Home: NextPage = () => {
     if (!isLoading) isUserAuthenticated() ? router.push("/") : router.push("/admin/signin");
   }, [isLoading, authenticated]);
 
-  return <> {isLoading ? "Loading..." : `${entity} signin`}</>;
+  return (
+    <>
+      {isLoading ? "Loading..." : entity === "Admin" ? <AdminDashboard /> : `${entity} signin`}
+    </>
+  );
 };
 
 export default Home;
