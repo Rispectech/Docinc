@@ -85,3 +85,36 @@ interface signinRequestErrors {
     password: string;
   };
 }
+
+interface clientUpdateDialogProps {
+  isUpdateModalOpen: boolean;
+  handleClose: () => void;
+  clientInfo: clientInfoType;
+  signin: boolean;
+  updateClient: (body: formikSignUpInitialValues) => void;
+}
+
+interface clientInfoType {
+  name: string;
+  companyName: string;
+  address: string;
+  companyMobile: string;
+  companyEmail: string;
+  gst: string;
+  mobile: string;
+  license: string;
+  qr: number;
+  organization: string;
+  location: string;
+  _id: string;
+  email: string;
+  // _v: string;
+  // createdAt: string;
+  // updatedAt: string;
+}
+
+interface FeaturedPostProps {
+  post: clientInfoType;
+  deleteClient: (_id: string) => void;
+  handleOpen: () => void;
+}

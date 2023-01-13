@@ -26,7 +26,7 @@ export default function Header(props: HeaderProps) {
         </Typography>
 
         <Button variant="outlined" size="small">
-          Sign up
+          Logout
         </Button>
       </Toolbar>
     </React.Fragment>

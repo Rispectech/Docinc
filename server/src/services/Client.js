@@ -31,6 +31,10 @@ const createClient = async (ClientBody) => {
   return await clientModel.create({ ...ClientBody, password: hash });
 };
 
+const deleteClient = async (query) => {
+  return await clientModel.deleteOne(query);
+};
+
 const validateClientPassword = (password, Client) => {
   const checkPassword = bcrypt.compareSync(password, Client.password);
   return checkPassword;
@@ -104,4 +108,5 @@ module.exports = {
   reIssueAccessToken,
   makeDir,
   findAllClient,
+  deleteClient,
 };

@@ -16,7 +16,7 @@ const { CreateErrorClass } = require("../utils/error");
 const { signJwt, verifyJwt } = require("../utils/Jwt");
 const { resetPasswordModel } = require("../models/ResetPassword");
 const { compareHash, generateHash } = require("../utils/bycrpt");
-const { findAllClient } = require("../services/Client");
+const { findAllClient, deleteClient, upsertClient } = require("../services/Client");
 
 const accessTokenCookieOptions = {
   maxAge: 900000, // 15 mins
@@ -44,7 +44,7 @@ const adminSignupHandler = async (req, res, next) => {
 
     const verifiedOtp = await sendOtpVerificationEmail(Admin.email, Admin._id);
 
-    console.log(verifiedOtp);
+    // console.log(verifiedOtp);
     const Admin_obj = Admin.toObject();
     delete Admin_obj.password;
     // console.log(Admin_obj);
@@ -69,7 +69,7 @@ const adminLoginHandler = async (req, res, next) => {
 
     const session = await createSession(Admin._id, req.get("Admin-agent") || "");
 
-    console.log(session);
+    // console.log(session);
 
     const verifiedOtp = await sendOtpVerificationEmail(Admin.email, Admin._id);
 
@@ -113,7 +113,7 @@ const verifyOtpHandler = async (req, res) => {
   try {
     // const AdminId = req.Admin._id;
     const AdminId = req.body.id;
-    console.log(AdminId);
+    // console.log(AdminId);
     const body_otp = req.body.otp;
 
     if (!AdminId && !body_otp) {
@@ -133,12 +133,12 @@ const verifyOtpHandler = async (req, res) => {
       });
     }
 
-    console.log(AdminOtpRecords);
+    // console.log(AdminOtpRecords);
 
     const { expiresAt, otp } = AdminOtpRecords[0];
 
     if (expiresAt < Date.now()) {
-      console.log("working");
+      // console.log("working");
 
       await otpVerificationModel.deleteMany({ entityId: AdminId });
       return res.status(500).json({
@@ -199,7 +199,7 @@ const sendResetAdminPasswordEmailHandler = async (req, res) => {
     //   res.status(500).json({ status: "failure", message: "Admin not verified" });
     // }
 
-    console.log(Admin);
+    // console.log(Admin);
 
     const newPasswordReturn = await sendResetEmail(Admin, redirectUrl);
     res.status(200).json({
@@ -237,7 +237,7 @@ const resetAdminPasswordHandler = async (req, res) => {
 
     const hashedResetSequence = resetPasswordObject[0].resetString;
     const token = await compareHash(resetSequence, hashedResetSequence);
-    console.log(token);
+    // console.log(token);
 
     if (!token) {
       // console.log("working");
@@ -296,7 +296,7 @@ const getAllClient = async (req, res) => {
     const admin = req.user;
 
     const allClients = await findAllClient({});
-    console.log(allClients);
+    // console.log(allClients);
     return res.status(200).json({ status: "success", data: allClients });
   } catch (error) {
     console.log(error);
@@ -306,6 +306,34 @@ const getAllClient = async (req, res) => {
   }
 };
 
+const deleteClientHandler = async (req, res) => {
+  try {
+    const admin = req.user;
+
+    const client = await deleteClient({ _id: req.body._id });
+    return res.status(200).json({ status: "success", data: client });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failure", message: "Unable to delete client" });
+  }
+};
+
+const updateClientHandler = async (req, res) => {
+  try {
+    const admin = req.user;
+    const clientBody = req.body;
+
+    const client = await upsertClient({ _id: clientBody._id }, clientBody, {
+      new: true,
+      upsert: true,
+    });
+
+    return res.status(200).json({ status: "success", data: client });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failure", message: "Unable to update client" });
+  }
+};
 module.exports = {
   adminSignupHandler,
   adminLoginHandler,
@@ -315,4 +343,6 @@ module.exports = {
   resetAdminPasswordHandler,
   refreshAdminAccessToken,
   getAllClient,
+  deleteClientHandler,
+  updateClientHandler,
 };

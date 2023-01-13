@@ -76,7 +76,7 @@ const reIssueAccessToken = async (refreshToken) => {
 
   const accessToken = signJwt(
     { Admin: Admin._id, session: session._id },
-    { expiresIn: "2h" } // 15 minutes
+    { expiresIn: process.env.ACCESS_TOKEN_TTL } // 15 minutes
   );
 
   return accessToken;

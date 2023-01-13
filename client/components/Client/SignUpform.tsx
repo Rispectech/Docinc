@@ -379,7 +379,7 @@ const ClientSignUpForm: React.FC<signUpComponentProps> = ({
             />
           </Grid> */}
 
-          <ClientSignUpOptions formik={formik} />
+          <ClientSignUpOptions formik={formik} signin={true} />
         </Grid>
 
         <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>

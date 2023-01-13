@@ -116,7 +116,7 @@ const deserializeAdmin = async (req, res, next) => {
 
     const { decoded, expired } = verifyJwt(token);
 
-    console.log(decoded);
+    // console.log(decoded);
     const user = await adminModel.findOne({ _id: decoded.Admin });
 
     // console.log(user);

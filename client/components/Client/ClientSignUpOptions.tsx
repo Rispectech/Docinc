@@ -6,8 +6,9 @@ import { FormikProps } from "formik";
 
 interface clientSignUpOptionsProps {
   formik: FormikProps<formikSignUpInitialValues>;
+  signin: boolean;
 }
-const ClientSignUpOptions: React.FC<clientSignUpOptionsProps> = ({ formik }) => {
+const ClientSignUpOptions: React.FC<clientSignUpOptionsProps> = ({ formik, signin }) => {
   return (
     <>
       <Grid item lg={12}>
@@ -134,7 +135,9 @@ const ClientSignUpOptions: React.FC<clientSignUpOptionsProps> = ({ formik }) => 
           value={formik.values.email}
           onChange={formik.handleChange}
           error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && String(formik.errors.email)}
+          helperText={
+            formik.touched.email && formik.errors.email && String(formik.errors.email)
+          }
         />
       </Grid>
 
@@ -222,45 +225,51 @@ const ClientSignUpOptions: React.FC<clientSignUpOptionsProps> = ({ formik }) => 
         </FormControl>
       </Grid>
 
-      <Grid item lg={6}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="password"
-          label="Password"
-          type="password"
-          id="password"
-          autoComplete="current-password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={
-            formik.touched.password && formik.errors.password && String(formik.errors.password)
-          }
-        />
-      </Grid>
+      {signin && (
+        <>
+          <Grid item lg={6}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={
+                formik.touched.password &&
+                formik.errors.password &&
+                String(formik.errors.password)
+              }
+            />
+          </Grid>
 
-      <Grid item lg={6}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="confirmPassword"
-          label="Confirm Password"
-          type="password"
-          id="confirmPassword"
-          autoComplete="current-password"
-          value={formik.values.confirmPassword}
-          onChange={formik.handleChange}
-          error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-          helperText={
-            formik.touched.confirmPassword &&
-            formik.errors.confirmPassword &&
-            String(formik.errors.confirmPassword)
-          }
-        />
-      </Grid>
+          <Grid item lg={6}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm Password"
+              type="password"
+              id="confirmPassword"
+              autoComplete="current-password"
+              value={formik.values.confirmPassword}
+              onChange={formik.handleChange}
+              error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+              helperText={
+                formik.touched.confirmPassword &&
+                formik.errors.confirmPassword &&
+                String(formik.errors.confirmPassword)
+              }
+            />
+          </Grid>
+        </>
+      )}
     </>
   );
 };

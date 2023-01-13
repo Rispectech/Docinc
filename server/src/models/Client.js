@@ -25,6 +25,15 @@ const clientSchema = new mongoose.Schema(
       default: false,
     },
 
+    companyName: {
+      type: String,
+      required: [true, "Email is required"],
+    },
+
+    location: {
+      type: String,
+    },
+
     companyEmail: {
       type: String,
       required: [true, "Email is required"],
